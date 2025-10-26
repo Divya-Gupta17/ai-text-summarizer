@@ -1,4 +1,4 @@
-# 🚀 AI Text Summarizer using Flask & Hugging Face 🤖
+#  AI Text Summarizer using Flask & Hugging Face 
 
 An intelligent and modern **AI-powered document summarizer** built with **Flask** and **Hugging Face Transformers**.  
 This app allows users to upload PDF files or paste text, then generates a concise and meaningful summary automatically.
