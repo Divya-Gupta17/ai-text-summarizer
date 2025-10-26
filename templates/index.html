@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> AI Text Summarizer </title>
+
+  <!--Google Fonts - Poppins is excellent for modern designs -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  
+  <style>
+    :root {
+      /* Define a vibrant color palette */
+      --primary-gradient-start: #667eea;
+      --primary-gradient-mid1: #764ba2;
+      --primary-gradient-mid2: #6b8dd6;
+      --primary-gradient-end: #8e37d7;
+      --accent-purple-light: #a78bfa;
+      --accent-purple-dark: #8b5cf6;
+      --text-light: #e2e8f0;
+      --text-dark: #333;
+      --glass-bg: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.3);
+      --input-bg-focus: rgba(255, 255, 255, 0.95);
+      --summary-bg: rgba(255, 255, 255, 0.1);
+      --button-gradient-start: #8b5cf6;
+      --button-gradient-mid: #6d28d9;
+      --button-gradient-end: #9333ea;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+      --input-shadow-light: rgba(255, 255, 255, 0.3);
+      --input-shadow-dark: rgba(0, 0, 0, 0.15);
+      --error-color: #ff6b6b;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden; /* Ensures the animating background doesn't create scrollbars */
+      background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-mid1), var(--primary-gradient-mid2), var(--primary-gradient-end));
+      background-size: 300% 300%; /* Makes the gradient large enough to animate smoothly */
+      animation: gradientMove 15s ease infinite alternate; /* Slower, smoother animation */
+    }
+
+    /* Animating background effect */
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background: var(--glass-bg);
+      border-radius: 25px;
+      box-shadow: 0 20px 50px var(--shadow-color); /* Enhanced shadow */
+      backdrop-filter: blur(25px); /* Stronger blur for more depth */
+      border: 1px solid var(--glass-border); /* Subtle border for glass effect */
+      padding: 60px 70px; /* Increased padding for spaciousness */
+      width: 90%;
+      max-width: 1000px; /* Wider container for a more website-like feel */
+      color: var(--text-light);
+      text-align: center;
+      animation: fadeIn 1.2s ease-out forwards; /* Longer, smoother fade-in */
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 4.2em; /* Significantly larger */
+      margin-bottom: 25px;
+      font-weight: 800; /* Extra bold */
+      letter-spacing: -2px; /* Tighter for impact */
+      background: linear-gradient(90deg, #ffffff, #c7d2fe, #f0abfc); /* Bright, contrasting gradient for text */
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1; /* Adjust line height for big titles */
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.4); /* Subtle glow */
+    }
+
+    h2 {
+      font-size: 2.2em; /* Larger */
+      font-weight: 700; /* Bolder */
+      color: #ffffff; /* Pure white for contrast */
+      margin: 45px 0 20px; /* More vertical spacing */
+      text-align: left;
+      border-left: 8px solid var(--accent-purple-light); /* Thicker, vibrant border */
+      padding-left: 18px; /* More padding */
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    }
+
+    input[type="file"],
+    textarea {
+      width: calc(100% - 32px); /* Account for padding */
+      padding: 18px; /* Larger padding */
+      border: none;
+      border-radius: 15px; /* More rounded */
+      margin-bottom: 25px;
+      font-size: 1.25rem; /* Larger font */
+      outline: none;
+      background: rgba(255, 255, 255, 0.85); /* Whiter, slightly less transparent */
+      box-shadow: inset 4px 4px 8px var(--input-shadow-dark),
+                  inset -4px -4px 8px var(--input-shadow-light); /* Deeper inner shadow */
+      color: var(--text-dark);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+    }
+
+    input[type="file"]::file-selector-button {
+      font-family: 'Poppins', sans-serif;
+      background: var(--accent-purple-dark);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background: #7c3aed; /* Slightly lighter purple on hover */
+    }
+
+    input[type="file"]:focus,
+    textarea:focus {
+      background: var(--input-bg-focus);
+      box-shadow: 0 0 10px var(--accent-purple-light); /* Stronger glow on focus */
+      transform: scale(1.005); /* Slight scale for visual feedback */
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 200px; /* Taller textarea */
+      line-height: 1.6;
+    }
+
+    button {
+      width: 100%;
+      padding: 18px; /* Larger padding */
+      border: none;
+      border-radius: 15px; /* More rounded */
+      background: linear-gradient(90deg, var(--button-gradient-start), var(--button-gradient-mid), var(--button-gradient-end));
+      color: white;
+      font-size: 1.35rem; /* Larger font */
+      font-weight: 700; /* Bolder */
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 25px rgba(107, 70, 193, 0.5); /* Stronger shadow */
+      letter-spacing: 0.5px;
+      text-transform: uppercase; /* All caps for impact */
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #d5c7fd, #8b5cf6); /* Brighter hover gradient */
+      transform: translateY(-5px) scale(1.01); /* More pronounced lift and slight scale */
+      box-shadow: 0 15px 35px rgba(107, 70, 193, 0.7); /* Even stronger shadow */
+    }
+
+    .summary-box {
+      background: var(--summary-bg); /* Darker, more prominent glass effect */
+      border-radius: 18px; /* More rounded */
+      padding: 30px; /* Larger padding */
+      min-height: 250px; /* Taller summary box */
+      font-size: 1.2rem; /* Larger font */
+      color: var(--text-light);
+      margin-top: 20px;
+      text-align: left;
+      box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.08); /* More subtle inner shadow */
+      white-space: pre-wrap;
+      line-height: 1.7; /* Increased line height for readability */
+      transition: all 0.3s ease;
+      overflow-y: auto; /* Allow scrolling for long summaries */
+      max-height: 400px; /* Max height to keep layout consistent */
+    }
+
+    .summary-box:empty::before {
+      content: "✨ Your brilliant, AI-generated summary will appear here..."; /* More engaging placeholder */
+      color: #aebfd0; /* Lighter placeholder color */
+      font-style: italic;
+      display: block;
+      text-align: center;
+      padding-top: 50px; /* Center vertically */
+    }
+
+    .spinner {
+      display: none;
+      margin: 40px auto;
+      width: 55px; /* Larger spinner */
+      height: 55px;
+      border: 6px solid rgba(255, 255, 255, 0.3);
+      border-top: 6px solid var(--accent-purple-light); /* Vibrant spinner color */
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      color: var(--error-color);
+      font-weight: 700; /* Bolder */
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.25em; /* Larger error message */
+      text-shadow: 0 0 10px rgba(255, 0, 0, 0.4); /* Stronger error glow */
+    }
+
+    .footer {
+      margin-top: 50px;
+      font-size: 1.1em; /* Larger footer font */
+      color: #e0e0e0;
+      opacity: 0.9;
+      text-align: center;
+      animation: fadeIn 1.5s ease;
+      font-weight: 500;
+    }
+
+    .footer span {
+      color: #c084fc; /* Vibrant accent color */
+      font-weight: 600;
+    }
+
+    /* 🌍 Responsive adjustments */
+    @media (max-width: 1024px) {
+      .container {
+        padding: 50px 40px;
+        max-width: 95%;
+      }
+      h1 { font-size: 3.5em; }
+      h2 { font-size: 1.8em; }
+      input[type="file"], textarea, button, .summary-box { font-size: 1.1rem; }
+      button { padding: 16px; }
+      textarea { min-height: 180px; }
+      .summary-box { min-height: 220px; max-height: 350px;}
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 40px 30px;
+        border-radius: 20px;
+      }
+      h1 { font-size: 2.8em; letter-spacing: -1px; }
+      h2 { font-size: 1.5em; margin: 35px 0 15px; border-left: 6px solid var(--accent-purple-light); padding-left: 15px; }
+      input[type="file"], textarea, button, .summary-box { font-size: 1rem; padding: 14px; margin-bottom: 20px;}
+      button { font-size: 1.15rem; }
+      textarea { min-height: 160px; }
+      .summary-box { min-height: 200px; max-height: 300px; padding: 25px; }
+      .spinner { width: 45px; height: 45px; margin: 30px auto; }
+      .error-message { font-size: 1.1em; }
+      .footer { font-size: 0.95em; margin-top: 35px; }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+        border-radius: 15px;
+      }
+      h1 { font-size: 2.2em; letter-spacing: 0; }
+      h2 { font-size: 1.3em; margin: 30px 0 12px; border-left: 5px solid var(--accent-purple-light); padding-left: 12px; }
+      input[type="file"], textarea, button, .summary-box { font-size: 0.95rem; padding: 12px; margin-bottom: 18px;}
+      button { font-size: 1.05rem; }
+      textarea { min-height: 140px; }
+      .summary-box { min-height: 180px; max-height: 250px; padding: 20px; }
+      .spinner { width: 35px; height: 35px; margin: 25px auto; }
+      .error-message { font-size: 1em; }
+      .footer { font-size: 0.9em; margin-top: 30px; }
+      .summary-box:empty::before { padding-top: 30px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1><span role="img" aria-label="sparkles">✨</span> AI Document Summarizer <span role="img" aria-label="sparkles">✨</span></h1>
+
+    <h2>Upload a PDF Document</h2>
+    <input type="file" id="pdfFile" accept=".pdf" />
+    <button onclick="uploadPdf()">Upload & Summarize PDF <span role="img" aria-label="rocket">🚀</span></button>
+
+    <h2>Or Paste Text for Instant Summary</h2>
+    <textarea id="textInput" placeholder="Paste or type your text here for an AI-powered summary..."></textarea>
+    <button onclick="summarizeTextInput()">Summarize Text <span role="img" aria-label="magic wand">🪄</span></button>
+
+    <div class="spinner" id="spinner"></div>
+
+    <h2>Your Summary:</h2>
+    <div id="summaryOutput" class="summary-box"></div>
+    <p id="errorOutput" class="error-message"></p>
+
+    <div class="footer">
+      
+      <p>&copy; 2025 AI summariser.</p>
+    </div>
+  </div>
+
+  <script>
+    const spinner = document.getElementById("spinner");
+    const summaryOutput = document.getElementById("summaryOutput");
+    const errorOutput = document.getElementById("errorOutput");
+
+    function showSpinner() { spinner.style.display = "block"; }
+    function hideSpinner() { spinner.style.display = "none"; }
+
+    async function uploadPdf() {
+      const pdfFile = document.getElementById("pdfFile").files[0];
+      summaryOutput.innerText = "";
+      errorOutput.innerText = "";
+      if (!pdfFile) { errorOutput.innerText = "📁 Please select a PDF file to upload."; return; }
+
+      const formData = new FormData();
+      formData.append("pdf_file", pdfFile);
+      showSpinner();
+
+      try {
+        const response = await fetch("/upload_pdf", { method: "POST", body: formData });
+        const data = await response.json();
+        hideSpinner();
+        if (response.ok) summaryOutput.innerText = data.summary;
+        else errorOutput.innerText = data.error || "❌ Failed to summarize PDF. Please try again.";
+      } catch (error) {
+        hideSpinner();
+        errorOutput.innerText = "🌐 Network error or server unreachable. Check your connection.";
+        console.error("PDF Upload/Summarization Error:", error);
+      }
+    }
+
+    async function summarizeTextInput() {
+      const textInput = document.getElementById("textInput").value.trim();
+      summaryOutput.innerText = "";
+      errorOutput.innerText = "";
+      if (!textInput) { errorOutput.innerText = "✏️ Please enter some text to get a summary."; return; }
+
+      showSpinner();
+      try {
+        const response = await fetch("/summarize_text", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: textInput }),
+        });
+        const data = await response.json();
+        hideSpinner();
+        if (response.ok) summaryOutput.innerText = data.summary;
+        else errorOutput.innerText = data.error || "⚠️ Failed to summarize text. Please try again.";
+      } catch (error) {
+        hideSpinner();
+        errorOutput.innerText = "🌐 Network error or server unreachable. Check your connection.";
+        console.error("Text Summarization Error:", error);
+      }
+    }
+  </script>
+</body>
+</html>

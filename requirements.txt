@@ -1,0 +1,4 @@
+Flask
+PyPDF2
+transformers
+torch # Or tensorflow if you prefer
